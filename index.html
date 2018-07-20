@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<html></html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -213,6 +215,62 @@
 				</ul>
 			</div>
 		</div>
+		<div class="panel panel-info">
+			<div class="panel-heading"><h4><i class="glyphicon glyphicon-picture"></i> Project Demo：</h4></div>
+			<div class="panel-body">
+				<canvas id="canvas"></canvas>
+			</div>
+			<div class="panel-footer">
+				<div class="form-group">
+					<label>x轴偏移量：</label>
+					<input class="form-control" id="offsetX" type="range" min="1" max="100" value="20"/>
+				</div>
+				<div class="form-group">
+					<label>y轴偏移量：</label>
+					<input class="form-control" id="offsetY" type="range" min="1" max="100" value="20"/>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
+<script>
+var canvas = document.getElementById("canvas");
+var width = 800;
+var height = 400;
+canvas.width = width;
+canvas.height = height;
+var ctx = canvas.getContext("2d");
+ctx.lineWidth = 1;
+var x = parseInt(Math.random() * width);
+var y = parseInt(Math.random() * height);
+var unitX = 1;
+var unitY = 1;
+
+function getColor() {
+	var str = '';
+	var color = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f'];
+	for(var i = 0; i < 6; i++) {
+		str += color[parseInt(Math.random() * color.length)];
+	}
+	return '#' + str;
+}
+setInterval(function() {
+	var offsetX = document.getElementById('offsetX').value;
+	var offsetY = document.getElementById('offsetY').value;
+	ctx.beginPath();
+	ctx.moveTo(x, y);
+	x += unitX * offsetX;
+	y += unitY * offsetY;
+	ctx.lineTo(x, y);
+	ctx.stroke();
+	if(x > width - offsetX || x < offsetX) {
+		unitX = -unitX;
+		ctx.strokeStyle = getColor();
+	}
+	if(y > height - offsetY || y < offsetY) {
+		unitY = -unitY;
+		ctx.strokeStyle = getColor();
+	}
+}, 30);
+</script>
 </html>
