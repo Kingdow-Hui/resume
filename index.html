@@ -216,18 +216,29 @@
 			</div>
 		</div>
 		<div class="panel panel-info">
-			<div class="panel-heading"><h4><i class="glyphicon glyphicon-picture"></i> Project Demo：</h4></div>
+			<div class="panel-heading">
+				<h4><i class="glyphicon glyphicon-picture"></i> Project Demo：</h4>
+				<span id="remain">距离下次加速：<em>-</em>s</span>
+				&nbsp;|&nbsp;
+				<span id="score">得分：<em>0</em>分</span>
+				&nbsp;|&nbsp;
+				<span id="level">当前等级：<em>1</em>级</span>
+				&nbsp;|&nbsp;
+				<button id="restart" onclick="restart()" disabled>重新开始</button>
+				<hr/>
+				<span>玩法：<em>只需要将鼠标保持在圈内即可得分，出圈不得分、不扣分，时间每次都会递减，直到为零，游戏结束。</em></span>
+			</div>
 			<div class="panel-body">
-				<canvas id="canvas"></canvas>
+				<canvas id="canvas" onmousemove="countScore(event)" style="border: 1px solid #000;"></canvas>
 			</div>
 			<div class="panel-footer">
 				<div class="form-group">
 					<label>x轴偏移量：</label>
-					<input class="form-control" id="offsetX" type="range" min="1" max="100" value="20"/>
+					<input class="form-control" id="offsetX" type="range" min="1" max="10" value="2" disabled />
 				</div>
 				<div class="form-group">
 					<label>y轴偏移量：</label>
-					<input class="form-control" id="offsetY" type="range" min="1" max="100" value="20"/>
+					<input class="form-control" id="offsetY" type="range" min="1" max="10" value="2" disabled />
 				</div>
 			</div>
 		</div>
@@ -237,6 +248,15 @@
 var canvas = document.getElementById("canvas");
 var width = 800;
 var height = 400;
+var RADIUS = 20;
+
+var TIME = 10;
+var score = document.getElementById('score').children[0];
+var level = document.getElementById('level').children[0];
+var remain = TIME;
+var offsetX = document.getElementById('offsetX');
+var offsetY = document.getElementById('offsetY');
+
 canvas.width = width;
 canvas.height = height;
 var ctx = canvas.getContext("2d");
@@ -254,23 +274,70 @@ function getColor() {
 	}
 	return '#' + str;
 }
-setInterval(function() {
+function getStyles(obj){//兼容FF，IE10; IE9及以下未测试
+	return document.defaultView.getComputedStyle(obj);
+}
+
+// 得分：
+function countScore(e) {
+	var rect = canvas.getBoundingClientRect();
+	var left = parseInt(rect.x);//获取的是样式，需要转换为数值
+	var top = parseInt(rect.y);
+	if(TIME > 0) {
+		var mouseX = e.clientX;
+		var mouseY = e.clientY;
+		if(mouseX - left >= x - RADIUS && mouseX - left <= x + RADIUS && mouseY - top >= y - RADIUS && mouseY - top <= y + RADIUS) {
+			score.innerHTML = parseInt(score.innerHTML) + 1;
+		}
+	}
+}
+
+var index = setInterval(function() {
+	ctx.clearRect(0, 0, width, height);
 	var offsetX = document.getElementById('offsetX').value;
 	var offsetY = document.getElementById('offsetY').value;
 	ctx.beginPath();
-	ctx.moveTo(x, y);
+	ctx.arc(x, y, RADIUS, 0, Math.PI*2, true);
 	x += unitX * offsetX;
 	y += unitY * offsetY;
-	ctx.lineTo(x, y);
+	
 	ctx.stroke();
 	if(x > width - offsetX || x < offsetX) {
 		unitX = -unitX;
-		ctx.strokeStyle = getColor();
+		// ctx.strokeStyle = getColor();
 	}
 	if(y > height - offsetY || y < offsetY) {
 		unitY = -unitY;
-		ctx.strokeStyle = getColor();
+		// ctx.strokeStyle = getColor();
 	}
-}, 30);
+}, 20);
+
+var countTime = setInterval(function(){
+	if(TIME == 0) {
+		document.getElementById('remain').children[0].innerHTML = 0;
+		clearInterval(index);
+		clearInterval(countTime);
+		alert("Game Over!最终得分：" + score.innerHTML);
+		delete document.getElementById("restart").removeAttribute("disabled");
+	}
+	if(remain == 0) {
+		TIME -= 1;
+		remain = TIME;
+		offsetX.value = parseInt(offsetX.value) + 1;
+		offsetY.value = parseInt(offsetY.value) + 1;
+		level.innerHTML = parseInt(level.innerHTML) + 1;
+	} else {
+		document.getElementById('remain').children[0].innerHTML = remain;
+		remain--;
+	}
+}, 1000);
+
+function restart() {
+	if(confirm("确定重新开始？")) {
+		document.getElementById("restart").setAttribute("disabled", "disabled");
+		history.go(0);
+	}
+}
+
 </script>
 </html>
